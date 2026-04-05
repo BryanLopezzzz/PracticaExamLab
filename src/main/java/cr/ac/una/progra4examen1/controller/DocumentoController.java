@@ -1,104 +1,82 @@
 package cr.ac.una.progra4examen1.controller;
 
-import cr.ac.una.progra4examen1.model.Documento;
-import cr.ac.una.progra4examen1.model.MisDocumento;
-import cr.ac.una.progra4examen1.model.TipoDocumento;
-import cr.ac.una.progra4examen1.model.Usuario;
-import cr.ac.una.progra4examen1.service.DocumentoService;
-import cr.ac.una.progra4examen1.service.MisDocumentoService;
-import cr.ac.una.progra4examen1.service.TipoDocumentoService;
-import cr.ac.una.progra4examen1.service.UsuarioService;
+import cr.ac.una.progra4examen1.model.*;
+import cr.ac.una.progra4examen1.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/documentos")
+@RequiredArgsConstructor
 public class DocumentoController {
 
-    private final MisDocumentoService misDocSer;
-    private final DocumentoService docSer;
-    private final UsuarioService usuSer;
-    private final TipoDocumentoService tipoDocSer;
+    private final MisDocumentoService  misDocService;
+    private final DocumentoService     docService;
+    private final UsuarioService       usuService;
+    private final TipoDocumentoService tipoService;
 
-    public DocumentoController(MisDocumentoService misDocumentoService,
-                               DocumentoService documentoService,
-                               UsuarioService usuarioService,
-                               TipoDocumentoService tipoDocumentoService) {
-        this.misDocSer = misDocumentoService;
-        this.docSer = documentoService;
-        this.usuSer = usuarioService;
-        this.tipoDocSer = tipoDocumentoService;
-    }
+    @GetMapping({"/show", ""})
+    public String mostrar(@AuthenticationPrincipal UserDetails userDetails,
+                          @RequestParam(required = false) String tipo,
+                          Model model) {
 
-    @GetMapping("/show")
-    public String verDocumentos(@AuthenticationPrincipal UserDetails userDetails,
-                                @RequestParam(name = "tipo", required = false) String tipoCodigo,
-                                Model model) {
-        String login = userDetails.getUsername();
-        Usuario usuario = usuSer.buscarPorLogin(login);
+        Usuario usuario = usuService.buscarPorLogin(userDetails.getUsername());
 
-        List<MisDocumento> documentosUsuario = misDocSer.obtenerPorUsuarioId(usuario.getId());
+        List<MisDocumento> misDocumentos = misDocService.obtenerPorUsuarioId(usuario.getId());
 
-        double total = documentosUsuario.stream()
-                .mapToDouble(md -> (md.getDocumento().getMonto() + md.getDocumento().getTimbres()) * md.getCantidad())
+        double total = misDocumentos.stream()
+                .mapToDouble(md -> (double)(md.getDocumento().getMonto()
+                        + md.getDocumento().getTimbres()) * md.getCantidad())
                 .sum();
 
-        List<TipoDocumento> tipos = tipoDocSer.listarTodos();
-
-        List<Documento> documentosFiltrados = new ArrayList<>();
-        if (tipoCodigo != null && !tipoCodigo.isEmpty()) {
-            documentosFiltrados = docSer.buscarPorTipo(tipoCodigo);
-        }
-
-        model.addAttribute("tipos", tipos);
-        model.addAttribute("selectedTipo", tipoCodigo);
-        model.addAttribute("documentosFiltrados", documentosFiltrados);
-        model.addAttribute("misDocumentos", documentosUsuario);
-        model.addAttribute("misDocumento", new MisDocumento());
-        model.addAttribute("total", total);
-        model.addAttribute("username", login);
+        model.addAttribute("tipos",              tipoService.listarTodos());
+        model.addAttribute("selectedTipo",        tipo);
+        model.addAttribute("documentosFiltrados", tipo != null && !tipo.isBlank()
+                ? docService.buscarPorTipo(tipo)
+                : List.of());
+        model.addAttribute("misDocumentos",       misDocumentos);
+        model.addAttribute("misDocumento",        new MisDocumento());
+        model.addAttribute("total",               total);
+        model.addAttribute("username",            userDetails.getUsername());
 
         return "documentos";
     }
 
     @PostMapping("/agregar")
-    public String agregarDocumento(@RequestParam("docId") String docId,
-                                   @RequestParam("tipoActual") String tipoCodigo,
-                                   @AuthenticationPrincipal UserDetails userDetails) {
+    public String agregar(@RequestParam String docId,
+                          @RequestParam String tipoActual,
+                          @AuthenticationPrincipal UserDetails userDetails) {
 
-        Usuario usuario = usuSer.buscarPorLogin(userDetails.getUsername());
-        Documento documento = docSer.buscarPorId(docId);
+        Usuario   usuario   = usuService.buscarPorLogin(userDetails.getUsername());
+        Documento documento = docService.buscarPorId(docId);
 
-        Optional<MisDocumento> existente = misDocSer.buscarPorUsuarioYDocumento(usuario, documento);
+        Optional<MisDocumento> existente =
+                misDocService.buscarPorUsuarioYDocumento(usuario, documento);
 
         if (existente.isPresent()) {
             MisDocumento md = existente.get();
             md.setCantidad(md.getCantidad() + 1);
-            misDocSer.agregarDocumento(md);
+            misDocService.agregarDocumento(md);
         } else {
             MisDocumento nuevo = new MisDocumento();
             nuevo.setUsuario(usuario);
             nuevo.setDocumento(documento);
             nuevo.setCantidad(1);
-            misDocSer.agregarDocumento(nuevo);
+            misDocService.agregarDocumento(nuevo);
         }
 
-        return "redirect:/documentos/show?tipo=" + tipoCodigo;
+        return "redirect:/documentos/show?tipo=" + tipoActual;
     }
 
     @GetMapping("/eliminar/{id}")
-    public String eliminarDocumento(@PathVariable Long id) {
-        misDocSer.eliminarPorId(id);
-        return "redirect:/documentos/show";
-    }
-
-    @GetMapping
-    public String redirigir() {
+    public String eliminar(@PathVariable Long id) {
+        misDocService.eliminarPorId(id);
         return "redirect:/documentos/show";
     }
 }
