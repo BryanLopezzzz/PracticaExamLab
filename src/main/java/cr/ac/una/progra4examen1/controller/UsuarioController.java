@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class UsuarioController {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuRep;
+    private final PasswordEncoder passEn;
 
     public UsuarioController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.usuRep = usuarioRepository;
+        this.passEn = passwordEncoder;
     }
 
     @GetMapping("/index")
@@ -35,7 +35,7 @@ public class UsuarioController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate(); // Invalidar la sesión
+        session.invalidate();
         return "redirect:/login?logout";
     }
 

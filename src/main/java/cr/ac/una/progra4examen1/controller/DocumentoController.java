@@ -20,19 +20,19 @@ import java.util.*;
 @RequestMapping("/documentos")
 public class DocumentoController {
 
-    private final MisDocumentoService misDocumentoService;
-    private final DocumentoService documentoService;
-    private final UsuarioService usuarioService;
-    private final TipoDocumentoService tipoDocumentoService;
+    private final MisDocumentoService misDocSer;
+    private final DocumentoService docSer;
+    private final UsuarioService usuSer;
+    private final TipoDocumentoService tipoDocSer;
 
     public DocumentoController(MisDocumentoService misDocumentoService,
                                DocumentoService documentoService,
                                UsuarioService usuarioService,
                                TipoDocumentoService tipoDocumentoService) {
-        this.misDocumentoService = misDocumentoService;
-        this.documentoService = documentoService;
-        this.usuarioService = usuarioService;
-        this.tipoDocumentoService = tipoDocumentoService;
+        this.misDocSer = misDocumentoService;
+        this.docSer = documentoService;
+        this.usuSer = usuarioService;
+        this.tipoDocSer = tipoDocumentoService;
     }
 
     @GetMapping("/show")
@@ -40,19 +40,19 @@ public class DocumentoController {
                                 @RequestParam(name = "tipo", required = false) String tipoCodigo,
                                 Model model) {
         String login = userDetails.getUsername();
-        Usuario usuario = usuarioService.buscarPorLogin(login);
+        Usuario usuario = usuSer.buscarPorLogin(login);
 
-        List<MisDocumento> documentosUsuario = misDocumentoService.obtenerPorUsuarioId(usuario.getId());
+        List<MisDocumento> documentosUsuario = misDocSer.obtenerPorUsuarioId(usuario.getId());
 
         double total = documentosUsuario.stream()
                 .mapToDouble(md -> (md.getDocumento().getMonto() + md.getDocumento().getTimbres()) * md.getCantidad())
                 .sum();
 
-        List<TipoDocumento> tipos = tipoDocumentoService.listarTodos();
+        List<TipoDocumento> tipos = tipoDocSer.listarTodos();
 
         List<Documento> documentosFiltrados = new ArrayList<>();
         if (tipoCodigo != null && !tipoCodigo.isEmpty()) {
-            documentosFiltrados = documentoService.buscarPorTipo(tipoCodigo);
+            documentosFiltrados = docSer.buscarPorTipo(tipoCodigo);
         }
 
         model.addAttribute("tipos", tipos);
@@ -71,21 +71,21 @@ public class DocumentoController {
                                    @RequestParam("tipoActual") String tipoCodigo,
                                    @AuthenticationPrincipal UserDetails userDetails) {
 
-        Usuario usuario = usuarioService.buscarPorLogin(userDetails.getUsername());
-        Documento documento = documentoService.buscarPorId(docId);
+        Usuario usuario = usuSer.buscarPorLogin(userDetails.getUsername());
+        Documento documento = docSer.buscarPorId(docId);
 
-        Optional<MisDocumento> existente = misDocumentoService.buscarPorUsuarioYDocumento(usuario, documento);
+        Optional<MisDocumento> existente = misDocSer.buscarPorUsuarioYDocumento(usuario, documento);
 
         if (existente.isPresent()) {
             MisDocumento md = existente.get();
             md.setCantidad(md.getCantidad() + 1);
-            misDocumentoService.agregarDocumento(md);
+            misDocSer.agregarDocumento(md);
         } else {
             MisDocumento nuevo = new MisDocumento();
             nuevo.setUsuario(usuario);
             nuevo.setDocumento(documento);
             nuevo.setCantidad(1);
-            misDocumentoService.agregarDocumento(nuevo);
+            misDocSer.agregarDocumento(nuevo);
         }
 
         return "redirect:/documentos/show?tipo=" + tipoCodigo;
@@ -93,7 +93,7 @@ public class DocumentoController {
 
     @GetMapping("/eliminar/{id}")
     public String eliminarDocumento(@PathVariable Long id) {
-        misDocumentoService.eliminarPorId(id);
+        misDocSer.eliminarPorId(id);
         return "redirect:/documentos/show";
     }
 

@@ -16,54 +16,52 @@ import java.util.List;
 @Component
 public class DataLoader implements CommandLineRunner {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final TipoDocumentoRepository tipoDocumentoRepository;
-    private final DocumentoRepository documentoRepository;
-    private final MisDocumentoRepository misDocumentoRepository;
+    private final UsuarioRepository usuaRep;
+    private final PasswordEncoder passEn;
+    private final TipoDocumentoRepository tipDoc;
+    private final DocumentoRepository docRep;
+    private final MisDocumentoRepository misDocRep;
 
-    public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, TipoDocumentoRepository tipoDocumentoRepository,
-                      DocumentoRepository documentoRepository,
-                      MisDocumentoRepository misDocumentoRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tipoDocumentoRepository = tipoDocumentoRepository;
-        this.documentoRepository = documentoRepository;
-        this.misDocumentoRepository = misDocumentoRepository;
+    public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, TipoDocumentoRepository tipoDocumentoRepository, DocumentoRepository documentoRepository, MisDocumentoRepository misDocumentoRepository) {
+        this.usuaRep = usuarioRepository;
+        this.passEn = passwordEncoder;
+        this.tipDoc = tipoDocumentoRepository;
+        this.docRep = documentoRepository;
+        this.misDocRep = misDocumentoRepository;
     }
 
     @Override
     public void run(String... args) {
-        if (usuarioRepository.count() == 0) {
+        if (usuaRep.count() == 0) {
             Usuario user1 = new Usuario();
             user1.setLogin("JohnDoe");
-            user1.setPassword(passwordEncoder.encode("pwd123"));
+            user1.setPassword(passEn.encode("pwd123"));
             user1.setNombre("John");
             user1.setApellido("Doe");
             user1.setCedula("1122334455");
 
             Usuario user2 = new Usuario();
             user2.setLogin("JaneDoe");
-            user2.setPassword(passwordEncoder.encode("user123"));
+            user2.setPassword(passEn.encode("user123"));
             user2.setNombre("Jane");
             user2.setApellido("Done");
             user2.setCedula("6677889900");
 
             Usuario user3 = new Usuario();
             user3.setLogin("Alvaro");
-            user3.setPassword(passwordEncoder.encode("123"));
+            user3.setPassword(passEn.encode("123"));
             user3.setNombre("Alvaro");
             user3.setApellido("Alvarado");
             user3.setCedula("9988776655");
 
-            usuarioRepository.save(user1);
-            usuarioRepository.save(user2);
-            usuarioRepository.save(user3);
+            usuaRep.save(user1);
+            usuaRep.save(user2);
+            usuaRep.save(user3);
 
             System.out.println("Usuarios hardcoded insertados correctamente.");
         }
 
-        if (tipoDocumentoRepository.count() == 0) {
+        if (tipDoc.count() == 0) {
             TipoDocumento t1 = new TipoDocumento("001", "Personas Juridicas");
             TipoDocumento t2 = new TipoDocumento("002", "Bienes Inmuebles");
             TipoDocumento t3 = new TipoDocumento("003", "Bienes Muebles");
@@ -72,9 +70,9 @@ public class DataLoader implements CommandLineRunner {
             TipoDocumento t6 = new TipoDocumento("006", "Propiedad Intelectual");
             TipoDocumento t7 = new TipoDocumento("007", "Alerta Registral");
 
-            tipoDocumentoRepository.saveAll(List.of(t1, t2, t3, t4, t5, t6, t7));
+            tipDoc.saveAll(List.of(t1, t2, t3, t4, t5, t6, t7));
 
-            documentoRepository.saveAll(List.of(
+            docRep.saveAll(List.of(
                     new Documento("001", "Afectacion", 2785, 315, t1),
                     new Documento("002", "Cedula Juridica", 2785, 315, t1),
                     new Documento("003", "Historica de Movimientos", 2785, 315, t1),
@@ -86,31 +84,31 @@ public class DataLoader implements CommandLineRunner {
             ));
         }
 
-        var userOpt = usuarioRepository.findByLogin("JohnDoe");
+        var userOpt = usuaRep.findByLogin("JohnDoe");
         if (userOpt.isPresent()) {
             Usuario user = userOpt.get();
 
-            List<Documento> docs = documentoRepository.findAll();
+            List<Documento> docs = docRep.findAll();
             if (!docs.isEmpty()) {
                 MisDocumento md1 = new MisDocumento(null, user, docs.get(0), 1);
                 MisDocumento md2 = new MisDocumento(null, user, docs.get(1), 2);
 
-                misDocumentoRepository.saveAll(List.of(md1, md2));
+                misDocRep.saveAll(List.of(md1, md2));
 
                 System.out.println("Documentos asignados a JohnDoe correctamente.");
             }
         }
 
-        var AlvaroOpt = usuarioRepository.findByLogin("Alvaro");
+        var AlvaroOpt = usuaRep.findByLogin("Alvaro");
         if (AlvaroOpt.isPresent()) {
             Usuario Alvaro = AlvaroOpt.get();
-            List<Documento> docs = documentoRepository.findAll();
+            List<Documento> docs = docRep.findAll();
 
             if (!docs.isEmpty()) {
                 MisDocumento a1 = new MisDocumento(null, Alvaro, docs.get(4), 1); // Literal de Inmuebles
                 MisDocumento a2 = new MisDocumento(null, Alvaro, docs.get(7), 1); // Solicitud de Placas de Vehículo
 
-                misDocumentoRepository.saveAll(List.of(a1, a2));
+                misDocRep.saveAll(List.of(a1, a2));
 
                 System.out.println("Documentos asignados a Alvaro correctamente.");
             }
