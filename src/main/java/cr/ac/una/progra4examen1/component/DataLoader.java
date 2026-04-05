@@ -25,6 +25,7 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) {
         cargarUsuarios();
         cargarCatalogo();
+        cargarMisDocumentos();
     }
 
     private void cargarUsuarios() {
@@ -40,8 +41,8 @@ public class DataLoader implements CommandLineRunner {
         log.info(" {} usuarios cargados", usuarios.size());
     }
 
-    private Usuario crearUsuario(String login, String clave,
-                                 String nombre, String apellido, String cedula) {
+    private Usuario crearUsuario(String login, String clave, String nombre, String apellido,
+                                 String cedula) {
         Usuario u = new Usuario();
         u.setLogin(login);
         u.setPassword(encoder.encode(clave));
@@ -74,7 +75,46 @@ public class DataLoader implements CommandLineRunner {
                 new Documento("007", "Solicitud de Placas de Motos y remolques",10900,  0, pl),
                 new Documento("008", "Solicitud de Placas de Vehiculo",        17600,  0, pl)
         ));
-
         log.info(" Catálogo de documentos cargado");
+    }
+    private void cargarMisDocumentos() {
+        if (misDocRepo.count() > 0) return;
+
+        usuarioRepo.findByLogin("JPerez").ifPresent(jperez -> {
+            Documento afectacion  = docRepo.findById("001").orElse(null);
+            Documento cedJuridica = docRepo.findById("002").orElse(null);
+
+            if (afectacion != null && cedJuridica != null) {
+                misDocRepo.saveAll(List.of(
+                        new MisDocumento(null, jperez, afectacion,  1),
+                        new MisDocumento(null, jperez, cedJuridica, 2)
+                ));
+                log.info("Documentos iniciales asignados a JPerez");
+            }
+        });
+        usuarioRepo.findByLogin("MMata").ifPresent(mmata -> {
+            Documento histMovimientos  = docRepo.findById("003").orElse(null);
+            Documento histPropiedades  = docRepo.findById("004").orElse(null);
+
+            if (histMovimientos != null && histPropiedades != null) {
+                misDocRepo.saveAll(List.of(
+                        new MisDocumento(null, mmata, histMovimientos, 1),
+                        new MisDocumento(null, mmata, histPropiedades, 1)
+                ));
+                log.info("Documentos iniciales asignados a MMata");
+            }
+        });
+        usuarioRepo.findByLogin("Alvaro").ifPresent(alvaro -> {
+            Documento literalInmuebles = docRepo.findById("005").orElse(null);
+            Documento placasVehiculo   = docRepo.findById("008").orElse(null);
+
+            if (literalInmuebles != null && placasVehiculo != null) {
+                misDocRepo.saveAll(List.of(
+                        new MisDocumento(null, alvaro, literalInmuebles, 1),
+                        new MisDocumento(null, alvaro, placasVehiculo,   1)
+                ));
+                log.info("Documentos iniciales asignados a Alvaro");
+            }
+        });
     }
 }
