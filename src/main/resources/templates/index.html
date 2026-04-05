@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificaciones e Informes Digitales</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+</head>
+<body>
+
+<!-- Header con imagen -->
+<header>
+    <img th:src="@{/images/pintura.jpg}" alt="Encabezado Registro" style="width: 100%; height: auto;"/>
+</header>
+
+<!-- Subtítulo azul -->
+<div style="background-color: #032067; color: white; text-align: center; padding: 10px;">
+    <strong>INICIO</strong>
+</div>
+
+<!-- Contenido principal: login a la izquierda, info a la derecha -->
+<div class="container" style="display: flex; padding: 20px;">
+
+    <!-- LOGIN a la izquierda -->
+    <div style="width: 30%; margin-right: 40px;">
+        <div style="border: 1px solid #ccc; padding: 20px; background-color: #f4f4f4; text-align: center;">
+
+            <img th:src="@{/images/login.png}" alt="Login" style="width: 100%; max-width: 250px; height: 80px; margin-bottom: 15px;"/>
+
+            <h3>INGRESO PARA USUARIOS REGISTRADOS</h3>
+
+            <!-- Si NO ha iniciado sesión -->
+            <div sec:authorize="isAnonymous()">
+                <form th:action="@{/login}" method="post">
+                    <label for="username">Correo electrónico</label>
+                    <input type="text" id="username" name="username" placeholder="Email del usuario" required/>
+
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Clave del usuario" required/>
+
+                    <button type="submit">Ingresar</button>
+                </form>
+            </div>
+
+            <!-- Si YA inició sesión -->
+            <div sec:authorize="isAuthenticated()" style="margin-top: 20px;">
+                <p>Ya has iniciado sesión como <strong th:text="${username}">Usuario</strong>.</p>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFORMACIÓN a la derecha -->
+    <div style="flex: 1;">
+        <h3 style="color: #032067;">Bienvenidos al Sistema de Certificaciones e Informes Digitales en línea del Registro Nacional</h3>
+
+        <p><strong>Nuestra Misión:</strong><br>
+            "El Registro Nacional de Costa Rica es la Institución Pública, rectora y responsable de la actividad registral y geoespacial; protege los derechos inscritos de personas físicas y jurídicas, ofreciendo servicios de calidad y seguridad jurídica a los usuarios."
+        </p>
+
+        <p><strong>Nuestra Visión:</strong><br>
+            "Fortalecer la seguridad jurídica y el liderazgo en la prestación de servicios calidad e innovadores, en armonía con el ambiente."
+        </p>
+
+        <h4>Notificaciones</h4>
+        <ul>
+            <li>Señor usuario. En caso de requerir certificaciones para ser tramitadas ante el Ministerio de Relaciones Exteriores o para efectos de remates, deberá solicitarlas en las sedes, central o regional, del Registro Nacional.</li>
+            <li>Este sistema funciona en forma apropiada en los siguientes tecnologías, Navegadores: FireFox 4 o superior, Internet Explorer 7 o superior, Google Chrome, Safari 3.x y superior. Sistemas Operativos: Windows 7 o superior y Apple OS X 10.5 o superior.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer style="background-color: #032067; color: white; text-align: center; padding: 10px;">
+    <p>Todos los derechos reservados. 2013 . Registro Nacional . San José, Curridabat. Apartado Postal 523-2010 Curridabat mpdigital@rnp.go.cr</p>
+</footer>
+
+</body>
+</html>

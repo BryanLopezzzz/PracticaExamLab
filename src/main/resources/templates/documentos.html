@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificaciones e Informes Digitales</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+</head>
+<body>
+
+<!-- Header con imagen -->
+<header>
+    <img th:src="@{/images/pintura.jpg}" alt="Encabezado Registro" style="width: 100%; height: auto;" />
+</header>
+
+<!-- Menú superior -->
+<div class="menu-bar">
+    <div class="menu-left">
+        <a th:href="@{/index}">INICIO</a>
+        <a th:href="@{/documentos}">DOCUMENTOS</a>
+    </div>
+    <div class="menu-right">
+        <span>👤 <span sec:authentication="name"></span></span>
+        <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 15px;">
+            <button type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+</div>
+
+<!-- Contenedor principal vertical -->
+<div class="documentos-wrapper-vertical">
+
+    <!-- ============ SECCIÓN DOCUMENTOS ============ -->
+    <div class="seccion-documentos">
+        <h2 style="color: #0095d9; font-weight: bold;">DOCUMENTOS</h2>
+        <p>
+            <img th:src="@{/images/icono.png}" alt="info" style="width: 20px; vertical-align: middle; margin-right: 5px;">
+            Por favor seleccione el tipo de documento que desee y luego presione <b>"Ir"</b>. Una vez elegido el documento, por favor presione el botón de agregar.
+        </p>
+
+        <form th:action="@{/documentos/show}" method="get" style="display: flex; align-items: center; gap: 10px;">
+            <label for="tipo" style="margin-bottom: 0;">Tipo de Documento:</label>
+            <select id="tipo" name="tipo" required>
+                <option value="" disabled th:selected="${selectedTipo == null}">-- Seleccione --</option>
+                <option th:each="tipo : ${tipos}"
+                        th:value="${tipo.codigo}"
+                        th:text="${tipo.descripcion}"
+                        th:selected="${tipo.codigo == selectedTipo}">
+                </option>
+            </select>
+            <button type="submit" style="padding: 5px 15px; font-size: 14px;">Ir</button>
+        </form>
+
+        <table id="tabla-documentos"
+               th:if="${documentosFiltrados != null and !documentosFiltrados.isEmpty()}"
+               style="margin-top: 20px; width: 100%;">
+            <thead>
+            <tr style="background-color: #e0e0e0;">
+                <th>Documento</th>
+                <th>Precio</th>
+                <th>Agregar</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="doc : ${documentosFiltrados}">
+                <td th:text="${doc.descripcion}">Descripción</td>
+                <td th:text="${doc.monto + doc.timbres}">0</td>
+                <td>
+                    <form th:action="@{/documentos/agregar}" method="post" style="display: inline;">
+                        <input type="hidden" name="docId" th:value="${doc.id}" />
+                        <input type="hidden" name="tipoActual" th:value="${selectedTipo}" />
+                        <button type="submit" style="background: none; border: none; cursor: pointer;" title="Agregar a Mis Documentos">
+                            <img th:src="@{/images/carrito.png}" alt="Agregar" style="width: 25px; height: 25px;" />
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${documentosFiltrados != null and documentosFiltrados.isEmpty()}" style="color: red;">No hay documentos para este tipo.</p>
+    </div>
+
+    <!-- ============ SECCIÓN MIS DOCUMENTOS ============ -->
+    <div class="seccion-mis-documentos">
+        <h2 style="color: #0095d9; font-weight: bold;">MIS DOCUMENTOS</h2>
+        <p>
+            <img th:src="@{/images/icono.png}" alt="info" style="width: 20px; vertical-align: middle; margin-right: 5px;">
+            Este es el detalle de sus documentos. Recuerde que puede agregar otros o aumentar la cantidad de uno volviendo a agregarlo.
+        </p>
+
+        <table th:if="${misDocumentos != null and !misDocumentos.isEmpty()}" style="width: 100%;">
+            <thead>
+            <tr style="background-color: #e0e0e0;">
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Timbres</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Eliminar</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="md : ${misDocumentos}">
+                <td th:text="${md.documento.descripcion}">Nombre</td>
+                <td th:text="${md.documento.monto}">0</td>
+                <td th:text="${md.documento.timbres}">0</td>
+                <td th:text="${md.cantidad}">1</td>
+                <td th:text="${(md.documento.monto + md.documento.timbres) * md.cantidad}">0</td>
+                <td>
+                    <a th:href="@{'/documentos/eliminar/' + ${md.id}}" style="color: red; font-size: 20px;">❌</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${misDocumentos == null or misDocumentos.isEmpty()}" style="color: gray;">No ha agregado documentos aún.</p>
+
+        <div class="total" style="text-align: right; font-weight: bold; margin-top: 10px; color: red;">
+            Total General: ₡<span th:text="${total}">0</span>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer style="background-color: #032067; color: white; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%;">
+    <p>Todos los derechos reservados. Registro Nacional de Costa Rica.</p>
+</footer>
+
+</body>
+</html>

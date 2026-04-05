@@ -1,0 +1,38 @@
+package cr.ac.una.progra4examen1.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "usuarios")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "La cédula es obligatoria")
+    @Column(unique = true)
+    private String cedula;
+
+    @NotBlank(message = "El login es obligatorio")
+    @Column(unique = true)
+    private String login;
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    private String password;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    private String nombre;
+
+    @NotBlank(message = "El apellido es obligatorio")
+    private String apellido;
+
+
+}

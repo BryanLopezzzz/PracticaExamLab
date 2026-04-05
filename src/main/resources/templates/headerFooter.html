@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:fragment="head" >
+    <meta charset="UTF-8">
+    <title>HeaderFooter</title>
+    <link href="/css/main.css" rel="stylesheet" th:href="@{/css/main.css}" type="text/css" >
+</head>
+<body>
+    <header th:fragment="header" class="header-footer">
+        <nav>
+            <div>
+                <h1 id="headerName">Progra 4<br>Examen 1</h1>
+            </div>
+            <div class="headerLogo">
+                <img th:src="@{/images/logo.png}" th:alt="headerLogo.png">
+            </div>
+            <!--
+            <th:block th:if="${session.usuario == null}">
+                <div>
+                    <a href="/presentation/usuario/show">Login</a>
+                </div>
+            </th:block>
+            -->
+            <th:block th:if="${session.usuario != null}">
+                <div>
+                    <span>Bienvenido, </span>
+                </div>
+            </th:block>
+
+        </nav>
+    </header>
+
+
+
+    <footer th:fragment="footer" class="header-footer">
+        <div><h1>@Progra4Examen1.com</h1></div>
+        <div class="headerLogo"><img  th:src="@{/images/logo.png}" th:alt="headerLogo.png"> </div>
+    </footer>
+
+</body>
+</html>
